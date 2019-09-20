@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper  namespace="bit">
+    
+    <resultMap id="studentMap" type="bth.Student">
+        <id property="id" column="id"></id>
+        <result property="name" column="name"></result>
+        <result property="age" column="age"></result>
+    </resultMap>
+
+    <select id="getAllStudent" resultType="bth.Student">
+        select * from student
+    </select>
+
+    <insert id="addOne" parameterType="bth.Student">
+        insert into student(name,age) values(#{name},#{age})
+    </insert>
+
+    <select id="selectOne" parameterType="int" resultType="bth.Student">
+        select * from student where id = #{1}
+    </select>
+
+    <select id="selectOne_" parameterType="int" resultMap="studentMap">
+        select * from student where id = #{1}
+    </select>
+
+    <delete id="deleteOne" parameterType="int">
+        delete from student where id = #{1}
+    </delete>
+
+    <update id="updateOne" parameterType="bth.Student">
+        update student set name = #{name},age=#{age} where id = #{id}
+    </update>
+
+    <select id="selectBatch" parameterType="map" resultType="bth.Student">
+        select * from student limit #{start}, #{end}
+    </select>
+
+    <select id="findByCondition" parameterType="map" resultType="bth.Student">
+        select * from student
+        <where>
+            <if test="name!=null">
+                and name = #{name}
+            </if>
+            <if test="age!=null">
+                and age = #{age}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateByCondition" parameterType="map">
+        update student
+        <set>
+            <if test="name!=null">
+                name = #{name}
+            </if>
+            <if test="age!=null">
+                age = #{age}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="selectSome" parameterType="int" resultType="bth.Student">
+        select * from student where id in
+        <foreach collection="array" open="(" close=")" separator="," item="ids">
+            #{ids}
+        </foreach>
+    </select>
+
+    <sql id="key">
+        <trim suffixOverrides=",">
+            <if test="id!=null">
+                id,
+            </if>
+            <if test="name!=null">
+                name,
+            </if>
+            <if test="age!=null">
+                age,
+            </if>
+        </trim>
+    </sql>
+
+    <sql id="value">
+        <trim suffixOverrides=",">
+            <if test="id!=null">
+                #{id},
+            </if>
+            <if test="name!=null">
+                #{name},
+            </if>
+            <if test="age!=null">
+                #{age},
+            </if>
+        </trim>
+    </sql>
+
+    <insert id="insertOne_" parameterType="map">
+        insert into student(<include refid="key"></include>) values(<include refid="value"></include>)
+    </insert>
+
+    <resultMap id="stu-group" type="bth.Student" >
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <result column="age" property="age"></result>
+        <association  property="group" javaType="bth.Group" fetchType="lazy">
+            <id column="gid" property="id"></id>
+            <result column="gname" property="name"></result>
+        </association>
+    </resultMap>
+
+    <select id="selectStudents" parameterType="int" resultMap="stu-group">
+        select * from student,group_ where student.gid = #{1} and group_.gid = student.gid
+    </select>
+
+    <resultMap id="group-stu" type="bth.Group">
+        <id column="gid" property="id"></id>
+        <result column="gname" property="name"></result>
+        <collection property="students"  ofType="bth.Student" >
+            <id column="id" property="id"></id>
+            <result column="name" property="name"></result>
+            <result column="age" property="age"></result>
+        </collection>
+    </resultMap>
+    <select id="selectStudentsByGroup" parameterType="int" resultMap="group-stu">
+        select * from group_,student where group_.gid = #{1} and group_.gid = student.gid
+    </select>
+</mapper>
